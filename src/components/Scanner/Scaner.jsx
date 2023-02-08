@@ -6,6 +6,11 @@ const Scanner = (props) => {
   const { onDetected } = props;
 
   useEffect(() => {
+    const detected = (result) => {
+      console.log("Detected!");
+      onDetected(result.codeResult.code);
+    };
+
     Quagga.init(config, (err) => {
       if (err) {
         console.log(err, "error msg");
@@ -60,12 +65,7 @@ const Scanner = (props) => {
     });
 
     Quagga.onDetected(detected);
-  }, []);
-
-  const detected = (result) => {
-    console.log("Detected!");
-    onDetected(result.codeResult.code);
-  };
+  }, [onDetected]);
 
   return (
     // If you do not specify a target,
