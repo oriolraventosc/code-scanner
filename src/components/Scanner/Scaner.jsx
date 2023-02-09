@@ -1,78 +1,59 @@
-import React, { useEffect } from "react";
-import config from "./config.json";
-import Quagga from "quagga";
+import { Html5QrcodeScanner } from "html5-qrcode";
+import React from "react";
 
-const Scanner = (props) => {
-  const { onDetected } = props;
+const qrcodeRegionId = "html5qr-code-full-region";
 
-  useEffect(() => {
-    const detected = (result) => {
-      console.log("Detected!");
-      onDetected(result.codeResult.code);
-    };
+class Html5QrcodePlugin extends React.Component {
+  render() {
+    return <div id={qrcodeRegionId} />;
+  }
 
-    Quagga.init(config, (err) => {
-      if (err) {
-        console.log(err, "error msg");
-      }
-      Quagga.start();
-      return () => {
-        Quagga.stop();
-      };
+  componentWillUnmount() {
+    // TODO(mebjas): See if there is a better way to handle
+    //  promise in `componentWillUnmount`.
+    this.html5QrcodeScanner.clear().catch((error) => {
+      console.error("Failed to clear html5QrcodeScanner. ", error);
     });
+  }
 
-    //detecting boxes on stream
-    Quagga.onProcessed((result) => {
-      var drawingCtx = Quagga.canvas.ctx.overlay,
-        drawingCanvas = Quagga.canvas.dom.overlay;
-
-      if (result) {
-        if (result.boxes) {
-          drawingCtx.clearRect(
-            0,
-            0,
-            Number(drawingCanvas.getAttribute("width")),
-            Number(drawingCanvas.getAttribute("height"))
-          );
-          result.boxes
-            .filter(function (box) {
-              return box !== result.box;
-            })
-            .forEach(function (box) {
-              Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, {
-                color: "green",
-                lineWidth: 2,
-              });
-            });
-        }
-
-        if (result.box) {
-          Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, {
-            color: "#00F",
-            lineWidth: 2,
-          });
-        }
-
-        if (result.codeResult && result.codeResult.code) {
-          Quagga.ImageDebug.drawPath(
-            result.line,
-            { x: "x", y: "y" },
-            drawingCtx,
-            { color: "red", lineWidth: 3 }
-          );
-        }
+  componentDidMount() {
+    // Creates the configuration object for Html5QrcodeScanner.
+    function createConfig(props) {
+      var config = {};
+      if (props.fps) {
+        config.fps = props.fps;
       }
-    });
+      if (props.qrbox) {
+        config.qrbox = props.qrbox;
+      }
+      if (props.aspectRatio) {
+        config.aspectRatio = props.aspectRatio;
+      }
+      if (props.disableFlip !== undefined) {
+        config.disableFlip = props.disableFlip;
+      }
+      return config;
+    }
 
-    Quagga.onDetected(detected);
-  }, [onDetected]);
+    var config = createConfig(this.props);
+    var verbose = this.props.verbose === true;
 
-  return (
-    // If you do not specify a target,
-    // QuaggaJS would look for an element that matches
-    // the CSS selector #interactive.viewport
-    <div id="interactive" className="viewport" />
-  );
-};
+    // Suceess callback is required.
+    if (!this.props.qrCodeSuccessCallback) {
+      // eslint-disable-next-line no-throw-literal
+      throw "qrCodeSuccessCallback is required callback.";
+    }
 
-export default Scanner;
+    this.html5QrcodeScanner = new Html5QrcodeScanner(
+      qrcodeRegionId,
+      config,
+      verbose
+    );
+    this.html5QrcodeScanner.render(
+      this.props.qrCodeSuccessCallback,
+      this.props.qrCodeErrorCallback
+    );
+  }
+}
+
+export default Html5QrcodePlugin;

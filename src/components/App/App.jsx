@@ -1,26 +1,49 @@
-import React, { useState } from "react";
-// @ts-ignore
 import "./App.css";
+
+import React from "react";
 import Scanner from "../Scanner/Scaner";
+import ResultContainerPlugin from "../ResultContainerPlugin";
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      decodedResults: [],
+    };
 
-function App() {
-  const [camera, setCamera] = useState(false);
-  const [result, setResult] = useState(null);
+    // This binding is necessary to make `this` work in the callback.
+    this.onNewScanResult = this.onNewScanResult.bind(this);
+  }
 
-  const onDetected = (result) => {
-    setResult(result);
-  };
-  return (
-    <div className="App" style={{ width: "100vw" }}>
-      <p>{result ? result : "Scanning..."}</p>
-      <button onClick={() => setCamera(!camera)}>
-        {camera ? "Stop" : "Start"}
-      </button>
-      <div className="container">
-        {camera && <Scanner onDetected={onDetected} />}
+  render() {
+    return (
+      <div className="App">
+        <section className="App-section">
+          <div className="App-section-title"> Html5-qrcode React demo</div>
+          <br />
+          <br />
+          <br />
+          <Scanner
+            fps={10}
+            qrbox={250}
+            disableFlip={false}
+            qrCodeSuccessCallback={this.onNewScanResult}
+          />
+          <ResultContainerPlugin results={this.state.decodedResults} />
+        </section>
       </div>
-    </div>
-  );
+    );
+  }
+
+  onNewScanResult(decodedText, decodedResult) {
+    console.log("App [result]", decodedResult);
+
+    // let decodedResults = this.state.decodedResults;
+    // decodedResults.push(decodedResult);
+    this.setState((state, props) => {
+      state.decodedResults.push(decodedResult);
+      return state;
+    });
+  }
 }
 
 export default App;
