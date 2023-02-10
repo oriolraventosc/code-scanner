@@ -18,7 +18,7 @@ class App extends React.Component {
     return (
       <div className="App">
         <section className="App-section">
-          <div className="App-section-title"> Html5-qrcode React demo</div>
+          <div className="App-section-title">Barcode Scanner Demo</div>
           <br />
           <br />
           <br />
