@@ -5,7 +5,12 @@ const qrcodeRegionId = "html5qr-code-full-region";
 
 class Html5QrcodePlugin extends React.Component {
   render() {
-    return <div id={qrcodeRegionId} />;
+    // eslint-disable-next-line jsx-a11y/alt-text
+    return (
+      <>
+        <div id={qrcodeRegionId}> </div>
+      </>
+    );
   }
 
   componentWillUnmount() {
